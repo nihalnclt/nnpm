@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/nihalnclt/luna/models"
+	"github.com/nihalnclt/nnpm/models"
 )
 
 const REGISTRY_URL = "https://registry.npmjs.org"

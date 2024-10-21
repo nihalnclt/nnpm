@@ -1,4 +1,4 @@
-module github.com/nihalnclt/luna
+module github.com/nihalnclt/nnpm
 
 go 1.23.2
 

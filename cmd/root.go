@@ -13,9 +13,9 @@ const (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "luna",
-	Short: "Luna short desc",
-	Long:  "Luna long desc",
+	Use:   "nnpm",
+	Short: "nnpm short desc",
+	Long:  "nnpm long desc",
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Usage()
 	},

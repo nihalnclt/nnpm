@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/semver/v3"
-	"github.com/nihalnclt/luna/pkg/http"
+	"github.com/nihalnclt/nnpm/pkg/http"
 	"github.com/spf13/cobra"
 )
 
@@ -17,10 +17,14 @@ type Dependency struct {
 	Dependencies []*Dependency
 }
 
-// var dependencyMap sync.Map
-var dependencyMap = make(map[string]*Dependency)
-var depMapMutex sync.Mutex
+var dependencyMap sync.Map
+var fetchDepMap sync.Map
+
+// var dependencyMap = make(map[string]*Dependency)
+// var fetchDepMap = make(map[string]bool)
+// var depMapMutex sync.RWMutex
 var resolvedCount, downloadedCount int32
+var maxConcurrency int32 = 2
 
 // getPinnedReference retrieves the maximum satisfying version for a given package
 func (dep *Dependency) getPinnedReference() error {
@@ -78,33 +82,34 @@ func buildPackageDependencyTree(pkg *Dependency, wg *sync.WaitGroup, resolveCh c
 
 	// need to check the pkg.Reference satisfying the dependency
 	cacheKey := fmt.Sprintf("%s@%s", pkg.Name, pkg.Reference)
-	depMapMutex.Lock()
-	if cachedPkg, ok := dependencyMap[cacheKey]; ok {
-		depMapMutex.Unlock()
-		resolveCh <- cachedPkg
+	if cachedPkg, ok := dependencyMap.Load(cacheKey); ok {
+		resolveCh <- cachedPkg.(*Dependency)
 		return
+	}
+
+	if _, ok := fetchDepMap.Load(cacheKey); ok {
+		return
+	} else {
+		fetchDepMap.Store(cacheKey, true)
 	}
 
 	// TODO:
 	// ^1.0.0  -> ^1.0.1 and there is already 1.0.2 in cache, so i can take it from there
 	// Pin the reference if it's not already pinned
 	if err := pkg.getPinnedReference(); err != nil {
-		depMapMutex.Unlock()
 		fmt.Println(err.Error())
 		return
 	}
 
 	versionData, err := http.VersionData(pkg.Name, pkg.Reference)
 	if err != nil {
-		depMapMutex.Unlock()
 		fmt.Printf("error fetching version data for %s: %w", pkg.Name, err)
 		return
 	}
 
 	newPkg := &Dependency{Name: versionData.Name, Reference: versionData.Version}
 
-	dependencyMap[cacheKey] = newPkg
-	depMapMutex.Unlock()
+	dependencyMap.Store(cacheKey, newPkg)
 
 	// Increment the resolved count automatically
 	atomic.AddInt32(&resolvedCount, 1)

@@ -1,8 +1,8 @@
 package main
 
-import "github.com/nihalnclt/luna/cmd"
+import "github.com/nihalnclt/nnpm/cmd"
 
-// main is the entry point of the Luna application.
+// main is the entry point of the nnpm application.
 // It initializes and executes the command-line interface (CLI) defined in the cmd package.
 func main() {
 	cmd.Execute()

@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nihalnclt/luna/models"
-	"github.com/nihalnclt/luna/utils"
+	"github.com/nihalnclt/nnpm/models"
+	"github.com/nihalnclt/nnpm/utils"
 	"github.com/spf13/cobra"
 )
 
